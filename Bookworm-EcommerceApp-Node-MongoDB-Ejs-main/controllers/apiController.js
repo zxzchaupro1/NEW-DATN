@@ -65,7 +65,40 @@ const transporter = nodemailer.createTransport({
         rejectUnauthorized:true
       }
 });
-   
+const  userSignupNoOTP = async (req, res) => {
+  try {
+      const existingUser = await user.findOne({ email: req.body.email });
+
+      if (existingUser) {
+        req.session.errormsg = 'Email already exists';
+        //return res.redirect('/signup');
+        res.status(401).send({message:"Email already exists",status:401})
+      }
+      const hashedPassword = await bcrypt.hash(req.body.password, 10);
+        const newUser = new user({
+          username: req.body.userName,
+          email: req.body.email,
+          phoneNumber: req.body.phoneNumber,
+          age: req.body.age,
+          password: hashedPassword,
+          block: true,
+      });
+      await newUser.save();
+           
+        res.status(200).send({message:"Success",status:200, data:{
+          username: req.body.userName,
+          email: req.body.email,
+          phoneNumber: req.body.phoneNumber,
+          age: req.body.age,
+          password: hashedPassword,
+          block: true,
+      }})
+        //res.redirect('/otp')
+      
+    } catch (err) {
+      console.error(`Error inserting user: ${err}`);
+    }
+}; 
 const userSignup = async (req, res) => {
     try {
         const existingUser = await user.findOne({ email: req.body.email });
@@ -152,6 +185,7 @@ const userSignup = async (req, res) => {
         console.error(`Error inserting user: ${err}`);
       }
   };
+
   const verifyOTP = async (req,res)=> {
     try{
         const userOtp = await UserOTPVerification.findOne({email : req.body.email});
@@ -261,6 +295,20 @@ const editUser = async (req,res) =>{
   }
   
 // books 
+const searchBook = async (req, res) => {
+  const name = req.query.name;
+
+  book.find({ bookName: new RegExp(name, "i") })
+    .then(books => res.status(200).send({message:"Success",status:200, data:books}))
+    .catch(err => res.send(err));
+};
+const bookofGenre = async (req, res) => {
+  const genre = req.params.genre;
+
+  book.find({ genre })
+    .then(books => res.status(200).send({message:"Success",status:200, data:books}))
+    .catch(err => res.send(err));
+};
 const renderBook = async (req,res)=>{
     const books = await book.find({delete: {$ne: false}}).populate('author').populate('genre')
     req.session.userInfo = false
@@ -287,13 +335,24 @@ const bookDetails = async (req,res)=>{
     res.status(200).send({message:"Success",status:200, data:books,datarelated: relatedbooks})
     //res.render('book-detail',{title: 'Bookdetails',books,relatedbooks,userDetails,warning});
 }
+//banner 
+const renderBanner= async (req,res)=>{
+  const banners = await banner.findOne({banner: true}).populate('bigCard1ProductId').populate('bigCard2ProductId')
+  res.status(200).send({message:"Success",status:200, data:banners})
+  //res.render('book',{ title: "Books",books,userDetails,warning});
+}
+
 module.exports = {
    
     loginVarification, 
     userSignup,
     verifyOTP,
     editUser,
+    searchBook,
     renderBook,
     bookDetails,
-    addPoint
+    addPoint,
+    renderBanner,
+    bookofGenre,
+    userSignupNoOTP
 }
