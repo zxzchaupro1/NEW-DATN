@@ -279,6 +279,7 @@ const editUser = async (req, res) => {
   }
 };
 
+// changePassword
 const changePassword = async (req, res) => {
   try {
     const userId = req.params.id;
