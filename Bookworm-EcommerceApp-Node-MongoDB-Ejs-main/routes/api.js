@@ -21,7 +21,7 @@ router.post("/changePassword/:id", apiController.changePassword);
 router.post("/verifyotp", apiController.verifyOTP);
 
 // api books
-router.get("/search", apiController.searchBook);
+router.post("/search", apiController.searchBook);
 router.get("/getbooks/genre/:genre", apiController.bookofGenre);
 router.get("/getbooks", apiController.renderBook);
 router.get("/getbookdetails/:id", apiController.bookDetails);
@@ -30,4 +30,6 @@ router.get("/getbookdetails/:id", apiController.bookDetails);
 router.get("/getbanners", apiController.renderBanner);
 // api user point
 router.post("/addpoint", apiController.addPoint);
+router.post("/profile-user", apiController.getInfoUser);
+router.get("/get-genres", apiController.getGenres);
 module.exports = router;

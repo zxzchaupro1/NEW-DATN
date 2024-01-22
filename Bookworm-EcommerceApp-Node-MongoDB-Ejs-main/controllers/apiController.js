@@ -350,6 +350,7 @@ const addPoint = async (req, res) => {
           },
         }
       );
+      console.log("user", user);
       res.status(200).send({ message: "Success", status: 200 });
     }
   } catch (err) {
@@ -358,9 +359,23 @@ const addPoint = async (req, res) => {
   }
 };
 
+const getInfoUser = async (req, res) => {
+  try {
+    const userId = req.body.userId;
+
+    const userDetails = await user.findOne({ _id: userId });
+    res.status(200).send({ data: userDetails, status: 200 });
+  } catch (err) {
+    console.error(`Error Edit User Info : ${err}`);
+    //res.redirect(`/myProfile/${req.params.id}`);
+  }
+};
+
 // books
 const searchBook = async (req, res) => {
-  const name = req.query.name;
+  const name = req.body.name;
+
+  console.log("name", name);
 
   book
     .find({ bookName: new RegExp(name, "i") })
@@ -431,6 +446,30 @@ const renderBanner = async (req, res) => {
   //res.render('book',{ title: "Books",books,userDetails,warning});
 };
 
+const getGenres = async (req, res) => {
+  const genres = await genre.find({});
+
+  const result = [];
+
+  for (let idx = 0; idx < genres.length; idx++) {
+    const genre = genres[idx];
+    const books = await book.find({
+      genre: genre,
+    });
+
+    if (books && books.length > 0) {
+      result.push({
+        genreId: genre._id,
+        genreName: genre.genreName,
+        books,
+      });
+    }
+  }
+
+  res.status(200).send({ message: "Success", status: 200, data: result });
+  //res.render('book',{ title: "Books",books,userDetails,warning});
+};
+
 module.exports = {
   loginVarification,
   userSignup,
@@ -444,4 +483,6 @@ module.exports = {
   bookofGenre,
   userSignupNoOTP,
   changePassword,
+  getInfoUser,
+  getGenres,
 };
