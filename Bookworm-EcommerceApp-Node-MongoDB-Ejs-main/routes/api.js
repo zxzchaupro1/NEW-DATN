@@ -15,6 +15,7 @@ router.post("/signupNoOtp", apiController.userSignupNoOTP);
 // api edituser
 router.post("/editUser/:id", apiController.editUser);
 router.post("/changePassword/:id", apiController.changePassword);
+// router.post("/changePassword/:id", apiController.changePassword);
 
 // api verifyOTP
 router.post("/verifyotp", apiController.verifyOTP);
