@@ -9,7 +9,8 @@ const Razorpay = require("razorpay");
 
 const dotenv = require("dotenv");
 dotenv.config({ path: ".env" });
-
+const ads = require("../models/adsModel");
+const bannerApp = require("../models/bannerAppModel");
 const user = require("../models/userModel");
 const cart = require("../models/cartModel");
 const coupon = require("../models/couponModel");
@@ -278,8 +279,6 @@ const editUser = async (req, res) => {
     //res.redirect(`/myProfile/${req.params.id}`);
   }
 };
-
-// changePassword
 const changePassword = async (req, res) => {
   try {
     const userId = req.params.id;
@@ -350,7 +349,6 @@ const addPoint = async (req, res) => {
           },
         }
       );
-      console.log("user", user);
       res.status(200).send({ message: "Success", status: 200 });
     }
   } catch (err) {
@@ -358,7 +356,6 @@ const addPoint = async (req, res) => {
     //res.redirect(`/myProfile/${req.params.id}`);
   }
 };
-
 const getInfoUser = async (req, res) => {
   try {
     const userId = req.body.userId;
@@ -374,8 +371,6 @@ const getInfoUser = async (req, res) => {
 // books
 const searchBook = async (req, res) => {
   const name = req.body.name;
-
-  console.log("name", name);
 
   book
     .find({ bookName: new RegExp(name, "i") })
@@ -440,17 +435,234 @@ const renderBanner = async (req, res) => {
     .findOne({ banner: true })
     .populate("bigCard1ProductId")
     .populate("bigCard2ProductId");
-
-  console.log("banners", banners);
   res.status(200).send({ message: "Success", status: 200, data: banners });
   //res.render('book',{ title: "Books",books,userDetails,warning});
 };
 
+// ads
+const renderads = async (req, res) => {
+  try {
+    const warning = req.session.errormsg;
+    req.session.errormsg = false;
+
+    const adss = await ads.find();
+    res.status(200).send({
+      message: "Success",
+      status: 200,
+      data: adss && adss.length > 0 ? adss[0] : null,
+    });
+  } catch (err) {
+    console.error(`Error Get ads Management : ${err}`);
+  }
+};
+const adsDetail = async (req, res) => {
+  const adsone = await ads.findOne({ _id: req.params.id });
+
+  res.status(200).send({ message: "Success", status: 200, data: adsone });
+  //res.render('book-detail',{title: 'Bookdetails',books,relatedbooks,userDetails,warning});
+};
+const addads = async (req, res) => {
+  try {
+    const existingads = await ads.findOne({ adsName: req.body.adsName });
+    if (existingads) {
+      req.session.errormsg = "ads Already Exit";
+      return;
+    }
+    const newads = new ads({
+      adsName: req.body.adsName,
+      adsImage: req.file.adsImage,
+      active: true,
+      delete: true,
+    });
+    await newads.save();
+    res.status(200).send({ message: "Success", status: 200, data: newads });
+  } catch (err) {
+    console.error(`Error Add ads : ${err}`);
+    //res.redirect("/admin/adsManagement");
+  }
+};
+const editads = async (req, res) => {
+  try {
+    await ads.updateOne(
+      { _id: req.params.id },
+      {
+        $set: {
+          adsName: req.body.adsName,
+          adsImage: req.body.adsFile,
+          active: req.body.active,
+        },
+      }
+    );
+    res.status(200).send({
+      message: "Success",
+      status: 200,
+      data: {
+        adsName: req.body.adsName,
+        adsImage: req.body.adsFile,
+      },
+    });
+  } catch (err) {
+    console.error(`Error Edit ads : ${err}`);
+    // res.redirect("/admin/adsManagement");
+  }
+};
+const changeadsImage = async (req, res) => {
+  try {
+    await ads.updateOne(
+      { _id: req.params.id },
+      {
+        $set: {
+          adsName: req.body.adsName,
+          adsImage: req.file.filename,
+        },
+      }
+    );
+
+    const directoryPath = "public/" + req.body.adsFile;
+    fs.unlink(directoryPath, (err) => {
+      try {
+        if (err) {
+          throw err;
+        }
+        console.log("Delete ads Image successfully.");
+      } catch (err) {
+        console.error(`Error Deleting Book : ${err}`);
+      }
+    });
+    // res.redirect("/admin/adsManagement");
+    res.status(200).send({ message: "Success", status: 200, data: null });
+  } catch (err) {
+    console.error(`Error Change ads Image : ${err}`);
+    //res.redirect("/admin/adsManagement");
+  }
+};
+
+const deleteads = async (req, res) => {
+  try {
+    await ads.updateOne({ _id: req.params.id }, { $set: { delete: false } });
+    //res.redirect("/admin/adsManagement");
+    res.status(200).send({ message: "Success", status: 200, data: null });
+  } catch (err) {
+    console.error(`Error Delete ads : ${err}`);
+    //res.redirect("/admin/adsManagement");
+  }
+};
+
+//banner app mobile
+// ads
+const renderbannerApp = async (req, res) => {
+  try {
+    const warning = req.session.errormsg;
+    req.session.errormsg = false;
+    const bannerApps = await bannerApp.find();
+    res.status(200).send({ message: "Success", status: 200, data: bannerApps });
+  } catch (err) {
+    console.error(`Error Get bannerApp Management : ${err}`);
+  }
+};
+const bannerAppDetail = async (req, res) => {
+  const bannerAppone = await bannerApp.findOne({ _id: req.params.id });
+
+  res.status(200).send({ message: "Success", status: 200, data: bannerAppone });
+  //res.render('book-detail',{title: 'Bookdetails',books,relatedbooks,userDetails,warning});
+};
+const addbannerApp = async (req, res) => {
+  try {
+    const existingbannerApp = await bannerApp.findOne({
+      bannerAppName: req.body.bannerAppName,
+    });
+    if (existingbannerApp) {
+      req.session.errormsg = "bannerApp Already Exit";
+      return;
+    }
+    const newbannerApp = new bannerApp({
+      bannerAppName: req.body.bannerAppName,
+      bannerAppImage: req.file.bannerAppImage,
+      active: true,
+      delete: true,
+    });
+    await newbannerApp.save();
+    res
+      .status(200)
+      .send({ message: "Success", status: 200, data: newbannerApp });
+  } catch (err) {
+    console.error(`Error Add bannerApp : ${err}`);
+    //res.redirect("/admin/bannerAppManagement");
+  }
+};
+const editbannerApp = async (req, res) => {
+  try {
+    await bannerApp.updateOne(
+      { _id: req.params.id },
+      {
+        $set: {
+          bannerAppName: req.body.bannerAppName,
+          bannerAppImage: req.body.bannerAppFile,
+          active: req.body.active,
+        },
+      }
+    );
+    res.status(200).send({
+      message: "Success",
+      status: 200,
+      data: {
+        bannerAppName: req.body.bannerAppName,
+        bannerAppImage: req.body.bannerAppFile,
+      },
+    });
+  } catch (err) {
+    console.error(`Error Edit bannerApp : ${err}`);
+    // res.redirect("/admin/bannerAppManagement");
+  }
+};
+const changebannerAppImage = async (req, res) => {
+  try {
+    await bannerApp.updateOne(
+      { _id: req.params.id },
+      {
+        $set: {
+          bannerAppName: req.body.bannerAppName,
+          bannerAppImage: req.file.filename,
+        },
+      }
+    );
+
+    const directoryPath = "public/" + req.body.bannerAppFile;
+    fs.unlink(directoryPath, (err) => {
+      try {
+        if (err) {
+          throw err;
+        }
+        console.log("Delete bannerApp Image successfully.");
+      } catch (err) {
+        console.error(`Error Deleting Book : ${err}`);
+      }
+    });
+    // res.redirect("/admin/bannerAppManagement");
+    res.status(200).send({ message: "Success", status: 200, data: null });
+  } catch (err) {
+    console.error(`Error Change bannerApp Image : ${err}`);
+    //res.redirect("/admin/bannerAppManagement");
+  }
+};
+
+const deletebannerApp = async (req, res) => {
+  try {
+    await bannerApp.updateOne(
+      { _id: req.params.id },
+      { $set: { delete: false } }
+    );
+    //res.redirect("/admin/bannerAppManagement");
+    res.status(200).send({ message: "Success", status: 200, data: null });
+  } catch (err) {
+    console.error(`Error Delete bannerApp : ${err}`);
+    //res.redirect("/admin/bannerAppManagement");
+  }
+};
+
 const getGenres = async (req, res) => {
   const genres = await genre.find({});
-
   const result = [];
-
   for (let idx = 0; idx < genres.length; idx++) {
     const genre = genres[idx];
     const books = await book.find({
@@ -467,7 +679,6 @@ const getGenres = async (req, res) => {
   }
 
   res.status(200).send({ message: "Success", status: 200, data: result });
-  //res.render('book',{ title: "Books",books,userDetails,warning});
 };
 
 module.exports = {
@@ -482,6 +693,17 @@ module.exports = {
   renderBanner,
   bookofGenre,
   userSignupNoOTP,
+  renderads,
+  adsDetail,
+  addads,
+  editads,
+  changeadsImage,
+  deleteads,
+  renderbannerApp,
+  addbannerApp,
+  editbannerApp,
+  deletebannerApp,
+  bannerAppDetail,
   changePassword,
   getInfoUser,
   getGenres,

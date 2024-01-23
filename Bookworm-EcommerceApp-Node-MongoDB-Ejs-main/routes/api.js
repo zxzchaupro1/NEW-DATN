@@ -14,8 +14,6 @@ router.post("/signup", apiController.userSignup);
 router.post("/signupNoOtp", apiController.userSignupNoOTP);
 // api edituser
 router.post("/editUser/:id", apiController.editUser);
-router.post("/changePassword/:id", apiController.changePassword);
-// router.post("/changePassword/:id", apiController.changePassword);
 
 // api verifyOTP
 router.post("/verifyotp", apiController.verifyOTP);
@@ -30,6 +28,22 @@ router.get("/getbookdetails/:id", apiController.bookDetails);
 router.get("/getbanners", apiController.renderBanner);
 // api user point
 router.post("/addpoint", apiController.addPoint);
+
+// api user point
+router.post("/addpoint", apiController.addPoint);
 router.post("/profile-user", apiController.getInfoUser);
 router.get("/get-genres", apiController.getGenres);
+
+// api ads
+router.get("/get-new-ads", apiController.renderads);
+router.get("/getadsdetails/:id", apiController.adsDetail);
+router.post("/addads", apiController.addads);
+router.post("/editdads/:id", apiController.editads);
+router.get("/deleteads/:id", apiController.deleteads);
+// api banner app mobile
+router.get("/getbannerapp", apiController.renderbannerApp);
+router.get("/getbannerappdetails/:id", apiController.bannerAppDetail);
+router.post("/addbannerapp", apiController.addbannerApp);
+router.post("/editdbannerapp/:id", apiController.editbannerApp);
+router.get("/deletebannerapp/:id", apiController.deletebannerApp);
 module.exports = router;
